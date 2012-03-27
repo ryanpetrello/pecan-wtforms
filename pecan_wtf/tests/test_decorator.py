@@ -22,12 +22,12 @@ class TestIdempotentFormWrapper(TestCase):
 
         class RootController(object):
             @expose()
-            @pecan_wtf.with_form(SimpleForm, csrf_enabled=False)
+            @pecan_wtf.with_form(SimpleForm)
             def index(self):
                 return 'Hello, World!'
 
             @expose('name.html')
-            @pecan_wtf.with_form(SimpleForm, csrf_enabled=False)
+            @pecan_wtf.with_form(SimpleForm)
             def name(self):
                 return dict()
 
@@ -81,20 +81,12 @@ class TestIdempotentFormWrapperWithCustomKey(TestCase):
 
         class RootController(object):
             @expose()
-            @pecan_wtf.with_form(
-                SimpleForm,
-                key='some_form',
-                csrf_enabled=False
-            )
+            @pecan_wtf.with_form(SimpleForm, key='some_form')
             def index(self):
                 return 'Hello, World!'
 
             @expose('name_with_custom_key.html')
-            @pecan_wtf.with_form(
-                SimpleForm,
-                key='some_form',
-                csrf_enabled=False
-            )
+            @pecan_wtf.with_form(SimpleForm, key='some_form')
             def name(self):
                 return dict()
 
@@ -210,7 +202,7 @@ class TestCustomHandler(TestCase):
         class RootController(object):
 
             @expose('name.html')
-            @pecan_wtf.with_form(SimpleForm, csrf_enabled=False)
+            @pecan_wtf.with_form(SimpleForm)
             def index(self, **kw):
                 return dict()
 
@@ -284,7 +276,7 @@ class TestGenericHandler(TestCase):
         class RootController(object):
 
             @expose(generic=True, template='name.html')
-            @pecan_wtf.with_form(SimpleForm, csrf_enabled=False)
+            @pecan_wtf.with_form(SimpleForm)
             def index(self, **kw):
                 return dict()
 
@@ -357,7 +349,7 @@ class TestCallableHandler(TestCase):
         class RootController(object):
 
             @expose(generic=True, template='name.html')
-            @pecan_wtf.with_form(SimpleForm, csrf_enabled=False)
+            @pecan_wtf.with_form(SimpleForm)
             def index(self, **kw):
                 return dict()
 
@@ -401,6 +393,72 @@ class TestCallableHandler(TestCase):
         assert form.first_name(value='Ryan') in response.body
         assert str(form.last_name.label) in response.body
         assert str(form.last_name) in response.body
+
+        assert 'form' in response.request.pecan
+        assert isinstance(response.request.pecan['form'], self.formcls_)
+        assert response.request.pecan['form'].errors == {
+            'last_name': [u'This field is required.']
+        }
+
+
+class TestErrorAutoErrorMarkup(TestCase):
+
+    def setUp(self):
+        import pecan_wtf
+        from pecan import Pecan, expose, request
+        from pecan.middleware.recursive import RecursiveMiddleware
+        from webtest import TestApp
+
+        class SimpleForm(pecan_wtf.form.Form):
+            first_name = pecan_wtf.fields.TextField(
+                "First Name",
+                [pecan_wtf.validators.Required()]
+            )
+            last_name = pecan_wtf.fields.TextField(
+                "Last Name",
+                [pecan_wtf.validators.Required()]
+            )
+        self.formcls_ = SimpleForm
+
+        class RootController(object):
+
+            @expose(generic=True, template='name.html')
+            @pecan_wtf.with_form(SimpleForm)
+            def index(self, **kw):
+                return dict()
+
+            @index.when(method='POST')
+            @pecan_wtf.with_form(
+                SimpleForm,
+                error_config={
+                    'handler': lambda: request.path,
+                    'auto_insert_errors': True
+                },
+                csrf_enabled=False
+            )
+            def save(self, **kw):
+                return 'SAVED!'
+
+        template_path = os.path.join(
+                os.path.dirname(__file__),
+                'templates'
+        )
+
+        self.app = TestApp(RecursiveMiddleware(Pecan(
+            RootController(),
+            template_path=template_path
+        )))
+
+    def test_custom_error_handler(self):
+        response = self.app.post('/', params={
+            'first_name': 'Ryan',
+        })
+        assert ''.join([
+            '<label for="last_name">Last Name</label>: ',
+            '<span class="error-message">This field is required.</span>',
+            '<br />\n',
+            '<input id="last_name" name="last_name" type="text" value="">'
+        ]) in response.body
 
         assert 'form' in response.request.pecan
         assert isinstance(response.request.pecan['form'], self.formcls_)

@@ -47,10 +47,10 @@ def with_form(formcls, key='form', error_config={}, **kw):
     def deco(f):
 
         def wrapped(*args, **kwargs):
-            form = request.environ.pop('pecan.validation_form', None) or \
-                   formcls(request.POST, **kw)
-
             error_handler = error_config.pop('handler', None)
+
+            form = request.environ.pop('pecan.validation_form', None) or \
+                   formcls(request.POST, error_config=error_config, **kw)
 
             if key not in request.pecan:
                 request.pecan[key] = form
