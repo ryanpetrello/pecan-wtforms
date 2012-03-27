@@ -26,7 +26,9 @@ def with_form(formcls, key='form', error_handler=None):
     def deco(f):
 
         def wrapped(*args, **kwargs):
-            form = formcls(request.POST)
+            form = request.environ.pop('pecan.validation_form', None) or \
+                   formcls(request.POST)
+
             if key not in request.pecan:
                 request.pecan[key] = form
 
@@ -37,6 +39,7 @@ def with_form(formcls, key='form', error_handler=None):
                     location = location()
                 request.environ['REQUEST_METHOD'] = 'GET'
                 request.environ['pecan.validation_redirected'] = True
+                request.environ['pecan.validation_form'] = form
                 raise ForwardRequestException(location)
 
             ns = f(*args, **kwargs)

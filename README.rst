@@ -1,1 +1,1 @@
-**pecan-wtf** provides simple integration for Pecan with WTForms.
+Provides simple integration for Pecan with WTForms.

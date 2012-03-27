@@ -181,3 +181,216 @@ class TestWrapperValidation(TestCase):
             'first_name': ['This field is required.'],
             'last_name': ['This field is required.']
         }
+
+
+class TestCustomHandler(TestCase):
+
+    def setUp(self):
+        import wtforms
+        from pecan import Pecan, expose
+        from pecan.middleware.recursive import RecursiveMiddleware
+        from pecan_wtf import with_form
+        from webtest import TestApp
+
+        class SimpleForm(wtforms.form.Form):
+            first_name = wtforms.fields.TextField(
+                "First Name",
+                [wtforms.validators.Required()]
+            )
+            last_name = wtforms.fields.TextField(
+                "Last Name",
+                [wtforms.validators.Required()]
+            )
+        self.formcls_ = SimpleForm
+
+        class RootController(object):
+
+            @expose('name.html')
+            @with_form(SimpleForm)
+            def index(self, **kw):
+                return dict()
+
+            @expose()
+            @with_form(SimpleForm, error_handler='/')
+            def save(self, **kw):
+                return 'SAVED!'
+
+        template_path = os.path.join(
+                os.path.dirname(__file__),
+                'templates'
+        )
+
+        self.app = TestApp(RecursiveMiddleware(Pecan(
+            RootController(),
+            template_path=template_path
+        )))
+
+    def test_no_errors(self):
+        response = self.app.post('/save', params={
+            'first_name': 'Ryan',
+            'last_name': 'Petrello'
+        })
+        assert response.body == 'SAVED!'
+        assert response.namespace == 'SAVED!'
+        assert 'form' in response.request.pecan
+        assert isinstance(response.request.pecan['form'], self.formcls_)
+        assert response.request.pecan['form'].errors == {}
+
+    def test_custom_error_handler(self):
+        response = self.app.post('/save', params={
+            'first_name': 'Ryan',
+        })
+
+        form = self.formcls_()
+        assert str(form.first_name.label) in response.body
+        assert form.first_name(value='Ryan') in response.body
+        assert str(form.last_name.label) in response.body
+        assert str(form.last_name) in response.body
+
+        assert 'form' in response.request.pecan
+        assert isinstance(response.request.pecan['form'], self.formcls_)
+        assert response.request.pecan['form'].errors == {
+            'last_name': [u'This field is required.']
+        }
+
+
+class TestGenericHandler(TestCase):
+
+    def setUp(self):
+        import wtforms
+        from pecan import Pecan, expose
+        from pecan.middleware.recursive import RecursiveMiddleware
+        from pecan_wtf import with_form
+        from webtest import TestApp
+
+        class SimpleForm(wtforms.form.Form):
+            first_name = wtforms.fields.TextField(
+                "First Name",
+                [wtforms.validators.Required()]
+            )
+            last_name = wtforms.fields.TextField(
+                "Last Name",
+                [wtforms.validators.Required()]
+            )
+        self.formcls_ = SimpleForm
+
+        class RootController(object):
+
+            @expose(generic=True, template='name.html')
+            @with_form(SimpleForm)
+            def index(self, **kw):
+                return dict()
+
+            @index.when(method='POST')
+            @with_form(SimpleForm, error_handler='/')
+            def save(self, **kw):
+                return 'SAVED!'
+
+        template_path = os.path.join(
+                os.path.dirname(__file__),
+                'templates'
+        )
+
+        self.app = TestApp(RecursiveMiddleware(Pecan(
+            RootController(),
+            template_path=template_path
+        )))
+
+    def test_no_errors(self):
+        response = self.app.post('/', params={
+            'first_name': 'Ryan',
+            'last_name': 'Petrello'
+        })
+        assert response.body == 'SAVED!'
+        assert response.namespace == 'SAVED!'
+        assert 'form' in response.request.pecan
+        assert isinstance(response.request.pecan['form'], self.formcls_)
+        assert response.request.pecan['form'].errors == {}
+
+    def test_custom_error_handler(self):
+        response = self.app.post('/', params={
+            'first_name': 'Ryan',
+        })
+
+        form = self.formcls_()
+        assert str(form.first_name.label) in response.body
+        assert form.first_name(value='Ryan') in response.body
+        assert str(form.last_name.label) in response.body
+        assert str(form.last_name) in response.body
+
+        assert 'form' in response.request.pecan
+        assert isinstance(response.request.pecan['form'], self.formcls_)
+        assert response.request.pecan['form'].errors == {
+            'last_name': [u'This field is required.']
+        }
+
+
+class TestCallableHandler(TestCase):
+
+    def setUp(self):
+        import wtforms
+        from pecan import Pecan, expose, request
+        from pecan.middleware.recursive import RecursiveMiddleware
+        from pecan_wtf import with_form
+        from webtest import TestApp
+
+        class SimpleForm(wtforms.form.Form):
+            first_name = wtforms.fields.TextField(
+                "First Name",
+                [wtforms.validators.Required()]
+            )
+            last_name = wtforms.fields.TextField(
+                "Last Name",
+                [wtforms.validators.Required()]
+            )
+        self.formcls_ = SimpleForm
+
+        class RootController(object):
+
+            @expose(generic=True, template='name.html')
+            @with_form(SimpleForm)
+            def index(self, **kw):
+                return dict()
+
+            @index.when(method='POST')
+            @with_form(SimpleForm, error_handler=lambda: request.path)
+            def save(self, **kw):
+                return 'SAVED!'
+
+        template_path = os.path.join(
+                os.path.dirname(__file__),
+                'templates'
+        )
+
+        self.app = TestApp(RecursiveMiddleware(Pecan(
+            RootController(),
+            template_path=template_path
+        )))
+
+    def test_no_errors(self):
+        response = self.app.post('/', params={
+            'first_name': 'Ryan',
+            'last_name': 'Petrello'
+        })
+        assert response.body == 'SAVED!'
+        assert response.namespace == 'SAVED!'
+        assert 'form' in response.request.pecan
+        assert isinstance(response.request.pecan['form'], self.formcls_)
+        assert response.request.pecan['form'].errors == {}
+
+    def test_custom_error_handler(self):
+        response = self.app.post('/', params={
+            'first_name': 'Ryan',
+        })
+
+        form = self.formcls_()
+        assert str(form.first_name.label) in response.body
+        assert form.first_name(value='Ryan') in response.body
+        assert str(form.last_name.label) in response.body
+        assert str(form.last_name) in response.body
+
+        assert 'form' in response.request.pecan
+        assert isinstance(response.request.pecan['form'], self.formcls_)
+        assert response.request.pecan['form'].errors == {
+            'last_name': [u'This field is required.']
+        }
