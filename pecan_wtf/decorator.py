@@ -6,8 +6,8 @@ __all__ = ['with_form']
 
 def with_form(formcls, key='form', error_config={}, **kw):
     """
-    Used to wrap a controller with form creation for GET | HEAD and form
-    validation for anything else (e.g., POST | PUT | DELETE ).
+    Used to decorate a Pecan controller with form creation for GET | HEAD and
+    form validation for anything else (e.g., POST | PUT | DELETE ).
 
     For an HTTP GET or HEAD request, the form is instantiated and
     injected into the request object at ``request.pecan['form']`` and in
