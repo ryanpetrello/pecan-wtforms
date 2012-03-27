@@ -5,30 +5,29 @@ from unittest import TestCase
 class TestIdempotentFormWrapper(TestCase):
 
     def setUp(self):
-        import wtforms
+        import pecan_wtf
         from pecan import Pecan, expose
-        from pecan_wtf import with_form
         from webtest import TestApp
 
-        class SimpleForm(wtforms.form.Form):
-            first_name = wtforms.fields.TextField(
+        class SimpleForm(pecan_wtf.form.Form):
+            first_name = pecan_wtf.fields.TextField(
                 "First Name",
-                [wtforms.validators.Required()]
+                [pecan_wtf.validators.Required()]
             )
-            last_name = wtforms.fields.TextField(
+            last_name = pecan_wtf.fields.TextField(
                 "Last Name",
-                [wtforms.validators.Required()]
+                [pecan_wtf.validators.Required()]
             )
         self.formcls_ = SimpleForm
 
         class RootController(object):
             @expose()
-            @with_form(SimpleForm)
+            @pecan_wtf.with_form(SimpleForm, csrf_enabled=False)
             def index(self):
                 return 'Hello, World!'
 
             @expose('name.html')
-            @with_form(SimpleForm)
+            @pecan_wtf.with_form(SimpleForm, csrf_enabled=False)
             def name(self):
                 return dict()
 
@@ -65,30 +64,37 @@ class TestIdempotentFormWrapper(TestCase):
 class TestIdempotentFormWrapperWithCustomKey(TestCase):
 
     def setUp(self):
-        import wtforms
+        import pecan_wtf
         from pecan import Pecan, expose
-        from pecan_wtf import with_form
         from webtest import TestApp
 
-        class SimpleForm(wtforms.form.Form):
-            first_name = wtforms.fields.TextField(
+        class SimpleForm(pecan_wtf.form.Form):
+            first_name = pecan_wtf.fields.TextField(
                 "First Name",
-                [wtforms.validators.Required()]
+                [pecan_wtf.validators.Required()]
             )
-            last_name = wtforms.fields.TextField(
+            last_name = pecan_wtf.fields.TextField(
                 "Last Name",
-                [wtforms.validators.Required()]
+                [pecan_wtf.validators.Required()]
             )
         self.formcls_ = SimpleForm
 
         class RootController(object):
             @expose()
-            @with_form(SimpleForm, key='some_form')
+            @pecan_wtf.with_form(
+                SimpleForm,
+                key='some_form',
+                csrf_enabled=False
+            )
             def index(self):
                 return 'Hello, World!'
 
             @expose('name_with_custom_key.html')
-            @with_form(SimpleForm, key='some_form')
+            @pecan_wtf.with_form(
+                SimpleForm,
+                key='some_form',
+                csrf_enabled=False
+            )
             def name(self):
                 return dict()
 
@@ -125,25 +131,24 @@ class TestIdempotentFormWrapperWithCustomKey(TestCase):
 class TestWrapperValidation(TestCase):
 
     def setUp(self):
-        import wtforms
+        import pecan_wtf
         from pecan import Pecan, expose
-        from pecan_wtf import with_form
         from webtest import TestApp
 
-        class SimpleForm(wtforms.form.Form):
-            first_name = wtforms.fields.TextField(
+        class SimpleForm(pecan_wtf.form.Form):
+            first_name = pecan_wtf.fields.TextField(
                 "First Name",
-                [wtforms.validators.Required()]
+                [pecan_wtf.validators.Required()]
             )
-            last_name = wtforms.fields.TextField(
+            last_name = pecan_wtf.fields.TextField(
                 "Last Name",
-                [wtforms.validators.Required()]
+                [pecan_wtf.validators.Required()]
             )
         self.formcls_ = SimpleForm
 
         class RootController(object):
             @expose()
-            @with_form(SimpleForm)
+            @pecan_wtf.with_form(SimpleForm, csrf_enabled=False)
             def index(self, **kw):
                 return '%s %s' % (
                     kw.get('first_name', ''),
@@ -186,32 +191,35 @@ class TestWrapperValidation(TestCase):
 class TestCustomHandler(TestCase):
 
     def setUp(self):
-        import wtforms
+        import pecan_wtf
         from pecan import Pecan, expose
         from pecan.middleware.recursive import RecursiveMiddleware
-        from pecan_wtf import with_form
         from webtest import TestApp
 
-        class SimpleForm(wtforms.form.Form):
-            first_name = wtforms.fields.TextField(
+        class SimpleForm(pecan_wtf.form.Form):
+            first_name = pecan_wtf.fields.TextField(
                 "First Name",
-                [wtforms.validators.Required()]
+                [pecan_wtf.validators.Required()]
             )
-            last_name = wtforms.fields.TextField(
+            last_name = pecan_wtf.fields.TextField(
                 "Last Name",
-                [wtforms.validators.Required()]
+                [pecan_wtf.validators.Required()]
             )
         self.formcls_ = SimpleForm
 
         class RootController(object):
 
             @expose('name.html')
-            @with_form(SimpleForm)
+            @pecan_wtf.with_form(SimpleForm, csrf_enabled=False)
             def index(self, **kw):
                 return dict()
 
             @expose()
-            @with_form(SimpleForm, error_handler='/')
+            @pecan_wtf.with_form(
+                SimpleForm,
+                error_config={'handler': '/'},
+                csrf_enabled=False
+            )
             def save(self, **kw):
                 return 'SAVED!'
 
@@ -257,32 +265,34 @@ class TestCustomHandler(TestCase):
 class TestGenericHandler(TestCase):
 
     def setUp(self):
-        import wtforms
+        import pecan_wtf
         from pecan import Pecan, expose
         from pecan.middleware.recursive import RecursiveMiddleware
-        from pecan_wtf import with_form
         from webtest import TestApp
 
-        class SimpleForm(wtforms.form.Form):
-            first_name = wtforms.fields.TextField(
+        class SimpleForm(pecan_wtf.form.Form):
+            first_name = pecan_wtf.fields.TextField(
                 "First Name",
-                [wtforms.validators.Required()]
+                [pecan_wtf.validators.Required()]
             )
-            last_name = wtforms.fields.TextField(
+            last_name = pecan_wtf.fields.TextField(
                 "Last Name",
-                [wtforms.validators.Required()]
+                [pecan_wtf.validators.Required()]
             )
         self.formcls_ = SimpleForm
 
         class RootController(object):
 
             @expose(generic=True, template='name.html')
-            @with_form(SimpleForm)
+            @pecan_wtf.with_form(SimpleForm, csrf_enabled=False)
             def index(self, **kw):
                 return dict()
 
             @index.when(method='POST')
-            @with_form(SimpleForm, error_handler='/')
+            @pecan_wtf.with_form(SimpleForm,
+                error_config={'handler': '/'},
+                csrf_enabled=False
+            )
             def save(self, **kw):
                 return 'SAVED!'
 
@@ -328,32 +338,35 @@ class TestGenericHandler(TestCase):
 class TestCallableHandler(TestCase):
 
     def setUp(self):
-        import wtforms
+        import pecan_wtf
         from pecan import Pecan, expose, request
         from pecan.middleware.recursive import RecursiveMiddleware
-        from pecan_wtf import with_form
         from webtest import TestApp
 
-        class SimpleForm(wtforms.form.Form):
-            first_name = wtforms.fields.TextField(
+        class SimpleForm(pecan_wtf.form.Form):
+            first_name = pecan_wtf.fields.TextField(
                 "First Name",
-                [wtforms.validators.Required()]
+                [pecan_wtf.validators.Required()]
             )
-            last_name = wtforms.fields.TextField(
+            last_name = pecan_wtf.fields.TextField(
                 "Last Name",
-                [wtforms.validators.Required()]
+                [pecan_wtf.validators.Required()]
             )
         self.formcls_ = SimpleForm
 
         class RootController(object):
 
             @expose(generic=True, template='name.html')
-            @with_form(SimpleForm)
+            @pecan_wtf.with_form(SimpleForm, csrf_enabled=False)
             def index(self, **kw):
                 return dict()
 
             @index.when(method='POST')
-            @with_form(SimpleForm, error_handler=lambda: request.path)
+            @pecan_wtf.with_form(
+                SimpleForm,
+                error_config={'handler': lambda: request.path},
+                csrf_enabled=False
+            )
             def save(self, **kw):
                 return 'SAVED!'
 
