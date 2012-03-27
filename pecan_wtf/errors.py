@@ -26,7 +26,11 @@ class ErrorMarkupWidget(object):
     def __call__(self, field, **kw):
         value = self.widget(field, **kw)
         if field.errors:
-            value = self.format_errors(field.errors) + value
+            error_markup = self.format_errors(field.errors)
+            if self.prepend_errors:
+                value = error_markup + value
+            else:
+                value += error_markup
         return value
 
     def format_errors(self, errors):
