@@ -1,4 +1,4 @@
-import cgi
+from cgi import escape
 
 __all__ = ['ErrorMarkupWidget']
 
@@ -8,7 +8,7 @@ def default_formatter(v):
     Formatter that escapes the error, wraps the error in a span with
     class ``error-message``, and adds a ``<br>``
     """
-    return '<span class="error-message">%s</span><br />\n' % cgi.escape(v, 1)
+    return '<span class="error-message">%s</span><br />\n' % escape(v, True)
 
 
 class ErrorMarkupWidget(object):
