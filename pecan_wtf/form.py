@@ -12,26 +12,14 @@ class Form(SessionSecureForm):
     def __init__(self, formdata=None, obj=None, prefix='', csrf_enabled=True,
                     error_config={}, **kwargs):
         """
-        :param formdata:
-            Used to pass data coming from the enduser, usually `request.POST`
-            or equivalent.
-        :param obj:
-            If `formdata` is empty or not provided, this object is checked for
-            attributes matching form field names, which will be used for field
-            values.
-        :param prefix:
-            If provided, all fields will have their name prefixed with the
-            value.
+        In addition to ``wtforms.ext.csrf.session.SessionSecureForm``:
+
         :param csrf_enabled:
             Whether to use CSRF protection. If False, all CSRF behavior is
             suppressed.
         :param error_config:
             A dictionary containing configuration for displaying validation
             errors.  See ``pecan_wtf.with_form``.
-        :param `**kwargs`:
-            If `formdata` is empty or not provided and `obj` does not contain
-            an attribute named the same as a field, form will assign the value
-            of a matching keyword argument to the field, if one exists.
         """
         self.csrf_enabled = csrf_enabled
 
