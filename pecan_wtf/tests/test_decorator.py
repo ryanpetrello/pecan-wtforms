@@ -120,3 +120,64 @@ class TestIdempotentFormWrapperWithCustomKey(TestCase):
         assert str(form.first_name) in response.body
         assert str(form.last_name.label) in response.body
         assert str(form.last_name) in response.body
+
+
+class TestWrapperValidation(TestCase):
+
+    def setUp(self):
+        import wtforms
+        from pecan import Pecan, expose
+        from pecan_wtf import with_form
+        from webtest import TestApp
+
+        class SimpleForm(wtforms.form.Form):
+            first_name = wtforms.fields.TextField(
+                "First Name",
+                [wtforms.validators.Required()]
+            )
+            last_name = wtforms.fields.TextField(
+                "Last Name",
+                [wtforms.validators.Required()]
+            )
+        self.formcls_ = SimpleForm
+
+        class RootController(object):
+            @expose()
+            @with_form(SimpleForm)
+            def index(self, **kw):
+                return '%s %s' % (
+                    kw.get('first_name', ''),
+                    kw.get('last_name', '')
+                )
+
+        template_path = os.path.join(
+                os.path.dirname(__file__),
+                'templates'
+        )
+
+        self.app = TestApp(Pecan(
+            RootController(),
+            template_path=template_path
+        ))
+
+    def test_no_errors(self):
+        response = self.app.post('/', params={
+            'first_name': 'Ryan',
+            'last_name': 'Petrello'
+        })
+        assert response.body == 'Ryan Petrello'
+        assert response.namespace == 'Ryan Petrello'
+        assert 'form' in response.request.pecan
+        assert isinstance(response.request.pecan['form'], self.formcls_)
+        assert response.request.pecan['form'].errors == {}
+
+    def test_with_errors(self):
+        response = self.app.post('/', params={})
+        assert response.body == ' '
+        assert response.namespace == ' '
+        assert 'form' in response.request.pecan
+        assert isinstance(response.request.pecan['form'], self.formcls_)
+        assert response.request.pecan['form'].errors == {
+            'first_name': ['This field is required.'],
+            'last_name': ['This field is required.']
+        }

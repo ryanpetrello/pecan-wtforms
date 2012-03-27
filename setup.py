@@ -31,7 +31,7 @@ setup(
     license='MIT',
     install_requires=['pecan', 'wtforms'],
     tests_require=['WebTest >= 1.3.1'],  # py3 compat
-    test_suite='',
+    test_suite='pecan_wtf.tests',
     zip_safe=False,
     packages=find_packages(exclude=['ez_setup']),
     entry_points="""
