@@ -11,11 +11,15 @@ def with_form(formcls, key='form', error_config={}, **kw):
 
     For an HTTP GET or HEAD request, the form is instantiated and
     injected into the request object at ``request.pecan['form']`` and in
-    the template namespace at ``form`` (unless the key is otherwise specified).
+    the template namespace at ``form`` (unless the ``key`` is otherwise
+    specified).
 
     For an HTTP POST, PUT, or DELETE (non-idempotent) request, the form is
     instantiated and validated.  Errors from validation (if any) are accessible
     at ``request.pecan['form'].errors``.
+
+    Optionally, validation errors can be made to trigger an internal HTTP
+    redirect by specifying a ``handler`` in the ``error_config`` argument.
 
     :param formcls: A subclass of ``wtforms.form.Form``
     :param key: The key used to inject the form in the template namespace
@@ -26,7 +30,7 @@ def with_form(formcls, key='form', error_config={}, **kw):
                                        validation fails.  Can also be a
                                        callable that returns a URI path.
 
-                         ``auto_insert_errors`` - When True, markue for
+                         ``auto_insert_errors`` - When True, markup for
                                                   validation errors will
                                                   automatically be added
                                                   adjacent to erronuous fields.
