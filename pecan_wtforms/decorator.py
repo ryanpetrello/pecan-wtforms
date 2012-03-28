@@ -24,7 +24,8 @@ def with_form(formcls, key='form', error_cfg={}, **kw):
     :param formcls: A subclass of ``wtforms.form.Form``
     :param key: The key used to inject the form in the template namespace
     :param error_cfg: a dictionary containing configuration for
-                         displaying validation errors:
+                         displaying validatior errors:
+                         r
 
                          ``handler`` - a URI path to redirect to when form
                                        validation fails.  Can also be a
@@ -47,7 +48,8 @@ def with_form(formcls, key='form', error_cfg={}, **kw):
     def deco(f):
 
         def wrapped(*args, **kwargs):
-            error_handler = error_cfg.pop('handler', None)
+            copy_error_cfg = error_cfg.copy()
+            error_handler = copy_error_cfg.pop('handler', None)
 
             form = request.environ.pop('pecan.validation_form', None) or \
                    formcls(
@@ -56,7 +58,7 @@ def with_form(formcls, key='form', error_cfg={}, **kw):
                            'request': request,
                            'response': response
                        },
-                       error_cfg=error_cfg, **kw
+                       error_cfg=copy_error_cfg, **kw
                    )
 
             if key not in request.pecan:
@@ -71,6 +73,9 @@ def with_form(formcls, key='form', error_cfg={}, **kw):
                 request.environ['pecan.validation_redirected'] = True
                 request.environ['pecan.validation_form'] = form
                 raise ForwardRequestException(location)
+
+            # Remove the CSRF token (so it's not passed to the controller)
+            kwargs.pop('csrf_token', None)
 
             ns = f(*args, **kwargs)
             if type(ns) is dict and key not in ns:
