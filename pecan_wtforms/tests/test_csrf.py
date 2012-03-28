@@ -10,7 +10,7 @@ class TestCSRFValidation(TestCase):
         from pecan import Pecan, expose
         from webtest import TestApp
 
-        class SimpleForm(pecan_wtforms.form.Form):
+        class SimpleForm(pecan_wtforms.form.SecureForm):
             first_name = pecan_wtforms.fields.TextField(
                 "First Name",
                 [pecan_wtforms.validators.Required()]
@@ -19,7 +19,6 @@ class TestCSRFValidation(TestCase):
                 "Last Name",
                 [pecan_wtforms.validators.Required()]
             )
-        self.formcls_ = SimpleForm
 
         class RootController(object):
             @expose()

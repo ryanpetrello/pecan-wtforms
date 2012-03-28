@@ -50,7 +50,7 @@ class TestIdempotentFormWrapper(TestCase):
 
     def test_template_namespace_injection(self):
         response = self.app.get('/name')
-        form = self.formcls_(csrf_enabled=False)
+        form = self.formcls_()
 
         assert 'form' in response.namespace
         assert isinstance(response.namespace['form'], self.formcls_)
@@ -109,7 +109,7 @@ class TestIdempotentFormWrapperWithCustomKey(TestCase):
 
     def test_template_namespace_injection(self):
         response = self.app.get('/name')
-        form = self.formcls_(csrf_enabled=False)
+        form = self.formcls_()
 
         assert 'some_form' in response.namespace
         assert isinstance(response.namespace['some_form'], self.formcls_)
@@ -140,7 +140,7 @@ class TestWrapperValidation(TestCase):
 
         class RootController(object):
             @expose()
-            @pecan_wtforms.with_form(SimpleForm, csrf_enabled=False)
+            @pecan_wtforms.with_form(SimpleForm)
             def index(self, **kw):
                 return '%s %s' % (
                     kw.get('first_name', ''),
@@ -207,11 +207,7 @@ class TestCustomHandler(TestCase):
                 return dict()
 
             @expose()
-            @pecan_wtforms.with_form(
-                SimpleForm,
-                error_cfg={'handler': '/'},
-                csrf_enabled=False
-            )
+            @pecan_wtforms.with_form(SimpleForm, error_cfg={'handler': '/'})
             def save(self, **kw):
                 return 'SAVED!'
 
@@ -241,7 +237,7 @@ class TestCustomHandler(TestCase):
             'first_name': 'Ryan',
         })
 
-        form = self.formcls_(csrf_enabled=False)
+        form = self.formcls_()
         assert str(form.first_name.label) in response.body
         assert form.first_name(value='Ryan') in response.body
         assert str(form.last_name.label) in response.body
@@ -281,10 +277,7 @@ class TestGenericHandler(TestCase):
                 return dict()
 
             @index.when(method='POST')
-            @pecan_wtforms.with_form(SimpleForm,
-                error_cfg={'handler': '/'},
-                csrf_enabled=False
-            )
+            @pecan_wtforms.with_form(SimpleForm, error_cfg={'handler': '/'})
             def save(self, **kw):
                 return 'SAVED!'
 
@@ -314,7 +307,7 @@ class TestGenericHandler(TestCase):
             'first_name': 'Ryan',
         })
 
-        form = self.formcls_(csrf_enabled=False)
+        form = self.formcls_()
         assert str(form.first_name.label) in response.body
         assert form.first_name(value='Ryan') in response.body
         assert str(form.last_name.label) in response.body
@@ -356,8 +349,7 @@ class TestCallableHandler(TestCase):
             @index.when(method='POST')
             @pecan_wtforms.with_form(
                 SimpleForm,
-                error_cfg={'handler': lambda: request.path},
-                csrf_enabled=False
+                error_cfg={'handler': lambda: request.path}
             )
             def save(self, **kw):
                 return 'SAVED!'
@@ -388,7 +380,7 @@ class TestCallableHandler(TestCase):
             'first_name': 'Ryan',
         })
 
-        form = self.formcls_(csrf_enabled=False)
+        form = self.formcls_()
         assert str(form.first_name.label) in response.body
         assert form.first_name(value='Ryan') in response.body
         assert str(form.last_name.label) in response.body
@@ -433,8 +425,7 @@ class TestErrorAutoErrorMarkup(TestCase):
                 error_cfg={
                     'handler': lambda: request.path,
                     'auto_insert_errors': True
-                },
-                csrf_enabled=False
+                }
             )
             def save(self, **kw):
                 return 'SAVED!'
@@ -497,8 +488,7 @@ class TestRESTControllerHandler(TestCase):
             @expose()
             @pecan_wtforms.with_form(
                 SimpleForm,
-                error_cfg={'handler': lambda: request.path},
-                csrf_enabled=False
+                error_cfg={'handler': lambda: request.path}
             )
             def post(self, **kw):
                 return 'SAVED!'
@@ -518,7 +508,7 @@ class TestRESTControllerHandler(TestCase):
             'first_name': 'Ryan',
         })
 
-        form = self.formcls_(csrf_enabled=False)
+        form = self.formcls_()
         assert str(form.first_name.label) in response.body
         assert form.first_name(value='Ryan') in response.body
         assert str(form.last_name.label) in response.body
@@ -535,7 +525,7 @@ class TestRESTControllerHandler(TestCase):
             'first_name': 'Ryan',
         })
 
-        form = self.formcls_(csrf_enabled=False)
+        form = self.formcls_()
         assert str(form.first_name.label) in response.body
         assert form.first_name(value='Ryan') in response.body
         assert str(form.last_name.label) in response.body

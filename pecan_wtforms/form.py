@@ -4,10 +4,10 @@ import warnings
 from hashlib import md5
 
 from . import ValidationError
-from wtforms.ext.csrf.form import SecureForm
+from wtforms.ext.csrf.form import SecureForm as WTFSecureForm
 from .errors import ErrorMarkupWidget
 
-__all__ = ['Form']
+__all__ = ['SecureForm', 'Form']
 
 REASON_NO_REFERER = "Referer checking failed - no Referer."
 REASON_BAD_REFERER = "Referer checking failed - %s does not match %s."
@@ -17,19 +17,6 @@ REASON_MISSING_TOKEN = "CSRF token missing."
 
 def _get_new_csrf_value():
     return md5(str(random.getrandbits(128))).hexdigest()
-
-
-def authentication_token(key, request, response):
-    """
-    Return the current authentication token, creating one if it doesn't
-    already exist.
-    """
-    if key in request.cookies:
-        return request.cookies[key]
-
-    value = _get_new_csrf_value()
-    response.set_cookie(key, value, max_age=360)
-    return value
 
 
 def constant_time_compare(val1, val2):
@@ -49,21 +36,18 @@ def constant_time_compare(val1, val2):
     return result == 0
 
 
-class Form(SecureForm):
+class Form(WTFSecureForm):
     """
-    Pecan-specific subclass of WTForms **SecureForm** class.
+    Pecan-specific subclass of WTForms **Form** class.
     """
 
     SECRET_KEY = '_pecan_wtform_auth_token'
 
-    def __init__(self, formdata=None, obj=None, prefix='', csrf_enabled=True,
-                    csrf_context={}, error_cfg={}, **kwargs):
+    def __init__(self, formdata=None, obj=None, prefix='', csrf_context={},
+                    error_cfg={}, **kwargs):
         """
         In addition to ``wtforms.ext.csrf.session.SecureForm``:
 
-        :param csrf_enabled:
-            Whether to use CSRF protection. If False, all CSRF behavior is
-            suppressed.
         :param error_cfg:
             A dictionary containing configuration for displaying validation
             errors.  See ``pecan_wtforms.with_form``.
@@ -78,13 +62,28 @@ class Form(SecureForm):
                 RuntimeWarning
             )
 
-        self.csrf_enabled = csrf_enabled
         self.csrf_context = csrf_context
         super(Form, self).__init__(formdata, obj, prefix,
                                     csrf_context=self.csrf_context, **kwargs)
 
         if error_cfg.pop('auto_insert_errors', False) is True:
             self.setup_errors(error_cfg)
+
+    def generate_csrf_token(self, _):
+        return
+
+    def validate_csrf_token(self, field):
+        return
+
+    def setup_errors(self, config):
+        for f in self._fields.itervalues():
+            f.widget = ErrorMarkupWidget(f.widget, **config)
+
+
+class SecureForm(Form):
+    """
+    A form that includes validation for a cookie-based CSRF token.
+    """
 
     def same_origin(self, url1, url2):
         """
@@ -95,18 +94,37 @@ class Form(SecureForm):
                 (p2.scheme, p2.hostname, p2.port)
 
     def generate_csrf_token(self, _):
-        if self.csrf_enabled is False:
-            return
-        return authentication_token(
-            self.SECRET_KEY,
-            self.csrf_context['request'],
-            self.csrf_context['response']
+        """
+        Return the current authentication token, creating a cookie if it
+        doesn't already exist.
+        """
+        key = self.SECRET_KEY
+        request = self.csrf_context['request']
+        response = self.csrf_context['response']
+
+        if key in request.cookies:
+            value = request.cookies[key]
+        else:
+            value = _get_new_csrf_value()
+
+        # Always set the CSRF cookie to renew the expiry timer.
+        self.set_cookie(
+            response,
+            key,
+            value,
+            max_age=60 * 60 * 24 * 7 * 52,  # one year
+            secure=request.scheme == 'https'
+        )
+        return value
+
+    def set_cookie(self, response, key, value, **kwargs):
+        response.set_cookie(
+            key,
+            value,
+            **kwargs
         )
 
     def validate_csrf_token(self, field):
-        if self.csrf_enabled is False:
-            return
-
         request = self.csrf_context['request']
         if request.method not in ('GET', 'HEAD', 'OPTIONS', 'TRACE'):
             referer = request.headers.get('Referer')
@@ -139,7 +157,3 @@ class Form(SecureForm):
             #
             if not constant_time_compare(field.current_token, field.data):
                 raise ValidationError(field.gettext(REASON_BAD_TOKEN))
-
-    def setup_errors(self, config):
-        for f in self._fields.itervalues():
-            f.widget = ErrorMarkupWidget(f.widget, **config)

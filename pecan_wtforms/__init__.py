@@ -6,8 +6,8 @@ from wtforms.validators import *
 from wtforms.widgets import *
 from wtforms import ValidationError  # noqa
 
-from .form import Form
+from .form import SecureForm, Form
 from .decorator import with_form
 
-__all__ = ['Form', 'ValidationError', 'fields', 'validators', 'widgets',
-            'with_form']
+__all__ = ['SecureForm', 'Form', 'ValidationError', 'fields', 'validators',
+'widgets', 'with_form']

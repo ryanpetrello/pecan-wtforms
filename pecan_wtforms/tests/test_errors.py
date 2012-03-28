@@ -18,7 +18,7 @@ class TestErrorWidget(TestCase):
                 [pecan_wtforms.validators.Required()]
             )
 
-        f = SimpleForm(csrf_enabled=False, **values)
+        f = SimpleForm(**values)
         f.validate()
         return f
 

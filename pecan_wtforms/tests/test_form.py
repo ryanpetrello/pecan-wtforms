@@ -18,8 +18,7 @@ class TestFormValidation(TestCase):
 
         f = SimpleForm(
             first_name='Ryan',
-            last_name='Petrello',
-            csrf_enabled=False
+            last_name='Petrello'
         )
         f.validate()
         assert f.errors == {}
@@ -37,10 +36,7 @@ class TestFormValidation(TestCase):
                 [pecan_wtforms.validators.Required()]
             )
 
-        f = SimpleForm(
-            first_name='Ryan',
-            csrf_enabled=False
-        )
+        f = SimpleForm(first_name='Ryan')
         f.validate()
         assert f.errors == {'last_name': ['This field is required.']}
 
@@ -63,7 +59,6 @@ class TestFormWithErrorMarkup(TestCase):
         f = SimpleForm(
             first_name='Ryan',
             last_name='Petrello',
-            csrf_enabled=False,
             error_cfg={
                 'auto_insert_errors': True
             }
@@ -92,7 +87,6 @@ class TestFormWithErrorMarkup(TestCase):
 
         f = SimpleForm(
             first_name='Ryan',
-            csrf_enabled=False,
             error_cfg={
                 'auto_insert_errors': True
             }
@@ -119,7 +113,6 @@ class TestFormWithErrorMarkup(TestCase):
             )
 
         f = SimpleForm(
-            csrf_enabled=False,
             error_cfg={
                 'auto_insert_errors': True
             }
