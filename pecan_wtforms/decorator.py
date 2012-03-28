@@ -1,4 +1,4 @@
-from pecan import request
+from pecan import request, response
 from pecan.middleware.recursive import ForwardRequestException
 
 __all__ = ['with_form']
@@ -50,7 +50,14 @@ def with_form(formcls, key='form', error_cfg={}, **kw):
             error_handler = error_cfg.pop('handler', None)
 
             form = request.environ.pop('pecan.validation_form', None) or \
-                   formcls(request.POST, error_cfg=error_cfg, **kw)
+                   formcls(
+                       request.POST,
+                       csrf_context={
+                           'request': request,
+                           'response': response
+                       },
+                       error_cfg=error_cfg, **kw
+                   )
 
             if key not in request.pecan:
                 request.pecan[key] = form

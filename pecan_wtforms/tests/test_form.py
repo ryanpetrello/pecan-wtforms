@@ -44,26 +44,6 @@ class TestFormValidation(TestCase):
         f.validate()
         assert f.errors == {'last_name': ['This field is required.']}
 
-    def test_csrf_validation_by_default(self):
-        import pecan_wtforms
-
-        class SimpleForm(pecan_wtforms.form.Form):
-            first_name = pecan_wtforms.fields.TextField(
-                "First Name",
-                [pecan_wtforms.validators.Required()]
-            )
-            last_name = pecan_wtforms.fields.TextField(
-                "Last Name",
-                [pecan_wtforms.validators.Required()]
-            )
-
-        f = SimpleForm(
-            first_name='Ryan',
-            last_name='Petrello'
-        )
-        f.validate()
-        assert f.errors == {'csrf_token': ['CSRF token missing']}
-
 
 class TestFormWithErrorMarkup(TestCase):
 

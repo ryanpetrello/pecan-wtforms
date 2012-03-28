@@ -50,7 +50,7 @@ class TestIdempotentFormWrapper(TestCase):
 
     def test_template_namespace_injection(self):
         response = self.app.get('/name')
-        form = self.formcls_()
+        form = self.formcls_(csrf_enabled=False)
 
         assert 'form' in response.namespace
         assert isinstance(response.namespace['form'], self.formcls_)
@@ -109,7 +109,7 @@ class TestIdempotentFormWrapperWithCustomKey(TestCase):
 
     def test_template_namespace_injection(self):
         response = self.app.get('/name')
-        form = self.formcls_()
+        form = self.formcls_(csrf_enabled=False)
 
         assert 'some_form' in response.namespace
         assert isinstance(response.namespace['some_form'], self.formcls_)
@@ -241,7 +241,7 @@ class TestCustomHandler(TestCase):
             'first_name': 'Ryan',
         })
 
-        form = self.formcls_()
+        form = self.formcls_(csrf_enabled=False)
         assert str(form.first_name.label) in response.body
         assert form.first_name(value='Ryan') in response.body
         assert str(form.last_name.label) in response.body
@@ -314,7 +314,7 @@ class TestGenericHandler(TestCase):
             'first_name': 'Ryan',
         })
 
-        form = self.formcls_()
+        form = self.formcls_(csrf_enabled=False)
         assert str(form.first_name.label) in response.body
         assert form.first_name(value='Ryan') in response.body
         assert str(form.last_name.label) in response.body
@@ -388,7 +388,7 @@ class TestCallableHandler(TestCase):
             'first_name': 'Ryan',
         })
 
-        form = self.formcls_()
+        form = self.formcls_(csrf_enabled=False)
         assert str(form.first_name.label) in response.body
         assert form.first_name(value='Ryan') in response.body
         assert str(form.last_name.label) in response.body
@@ -518,7 +518,7 @@ class TestRESTControllerHandler(TestCase):
             'first_name': 'Ryan',
         })
 
-        form = self.formcls_()
+        form = self.formcls_(csrf_enabled=False)
         assert str(form.first_name.label) in response.body
         assert form.first_name(value='Ryan') in response.body
         assert str(form.last_name.label) in response.body
@@ -535,7 +535,7 @@ class TestRESTControllerHandler(TestCase):
             'first_name': 'Ryan',
         })
 
-        form = self.formcls_()
+        form = self.formcls_(csrf_enabled=False)
         assert str(form.first_name.label) in response.body
         assert form.first_name(value='Ryan') in response.body
         assert str(form.last_name.label) in response.body
