@@ -465,3 +465,84 @@ class TestErrorAutoErrorMarkup(TestCase):
         assert response.request.pecan['form'].errors == {
             'last_name': [u'This field is required.']
         }
+
+
+class TestRESTControllerHandler(TestCase):
+
+    def setUp(self):
+        import pecan_wtforms
+        from pecan import Pecan, expose, request
+        from pecan.rest import RestController
+        from pecan.middleware.recursive import RecursiveMiddleware
+        from webtest import TestApp
+
+        class SimpleForm(pecan_wtforms.form.Form):
+            first_name = pecan_wtforms.fields.TextField(
+                "First Name",
+                [pecan_wtforms.validators.Required()]
+            )
+            last_name = pecan_wtforms.fields.TextField(
+                "Last Name",
+                [pecan_wtforms.validators.Required()]
+            )
+        self.formcls_ = SimpleForm
+
+        class RootController(RestController):
+
+            @expose('name.html')
+            @pecan_wtforms.with_form(SimpleForm)
+            def get_all(self, **kw):
+                return dict()
+
+            @expose()
+            @pecan_wtforms.with_form(
+                SimpleForm,
+                error_config={'handler': lambda: request.path},
+                csrf_enabled=False
+            )
+            def post(self, **kw):
+                return 'SAVED!'
+
+        template_path = os.path.join(
+                os.path.dirname(__file__),
+                'templates'
+        )
+
+        self.app = TestApp(RecursiveMiddleware(Pecan(
+            RootController(),
+            template_path=template_path
+        )))
+
+    def test_rest_redirection(self):
+        response = self.app.post('/', params={
+            'first_name': 'Ryan',
+        })
+
+        form = self.formcls_()
+        assert str(form.first_name.label) in response.body
+        assert form.first_name(value='Ryan') in response.body
+        assert str(form.last_name.label) in response.body
+        assert str(form.last_name) in response.body
+
+        assert 'form' in response.request.pecan
+        assert isinstance(response.request.pecan['form'], self.formcls_)
+        assert response.request.pecan['form'].errors == {
+            'last_name': [u'This field is required.']
+        }
+
+    def test_rest_redirection_with_method_param(self):
+        response = self.app.post('/?_method=POST', params={
+            'first_name': 'Ryan',
+        })
+
+        form = self.formcls_()
+        assert str(form.first_name.label) in response.body
+        assert form.first_name(value='Ryan') in response.body
+        assert str(form.last_name.label) in response.body
+        assert str(form.last_name) in response.body
+
+        assert 'form' in response.request.pecan
+        assert isinstance(response.request.pecan['form'], self.formcls_)
+        assert response.request.pecan['form'].errors == {
+            'last_name': [u'This field is required.']
+        }
