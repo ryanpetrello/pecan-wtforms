@@ -25,7 +25,6 @@ def with_form(formcls, key='form', error_cfg={}, **kw):
     :param key: The key used to inject the form in the template namespace
     :param error_cfg: a dictionary containing configuration for
                          displaying validatior errors:
-                         r
 
                          ``handler`` - a URI path to redirect to when form
                                        validation fails.  Can also be a
