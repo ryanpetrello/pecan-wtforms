@@ -4,7 +4,7 @@ from pecan.middleware.recursive import ForwardRequestException
 __all__ = ['with_form']
 
 
-def with_form(formcls, key='form', error_config={}, **kw):
+def with_form(formcls, key='form', error_cfg={}, **kw):
     """
     Used to decorate a Pecan controller with form creation for GET | HEAD and
     form validation for anything else (e.g., POST | PUT | DELETE ).
@@ -19,11 +19,11 @@ def with_form(formcls, key='form', error_config={}, **kw):
     at ``request.pecan['form'].errors``.
 
     Optionally, validation errors can be made to trigger an internal HTTP
-    redirect by specifying a ``handler`` in the ``error_config`` argument.
+    redirect by specifying a ``handler`` in the ``error_cfg`` argument.
 
     :param formcls: A subclass of ``wtforms.form.Form``
     :param key: The key used to inject the form in the template namespace
-    :param error_config: a dictionary containing configuration for
+    :param error_cfg: a dictionary containing configuration for
                          displaying validation errors:
 
                          ``handler`` - a URI path to redirect to when form
@@ -47,10 +47,10 @@ def with_form(formcls, key='form', error_config={}, **kw):
     def deco(f):
 
         def wrapped(*args, **kwargs):
-            error_handler = error_config.pop('handler', None)
+            error_handler = error_cfg.pop('handler', None)
 
             form = request.environ.pop('pecan.validation_form', None) or \
-                   formcls(request.POST, error_config=error_config, **kw)
+                   formcls(request.POST, error_cfg=error_cfg, **kw)
 
             if key not in request.pecan:
                 request.pecan[key] = form

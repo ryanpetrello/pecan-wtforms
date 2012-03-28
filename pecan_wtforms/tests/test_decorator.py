@@ -209,7 +209,7 @@ class TestCustomHandler(TestCase):
             @expose()
             @pecan_wtforms.with_form(
                 SimpleForm,
-                error_config={'handler': '/'},
+                error_cfg={'handler': '/'},
                 csrf_enabled=False
             )
             def save(self, **kw):
@@ -282,7 +282,7 @@ class TestGenericHandler(TestCase):
 
             @index.when(method='POST')
             @pecan_wtforms.with_form(SimpleForm,
-                error_config={'handler': '/'},
+                error_cfg={'handler': '/'},
                 csrf_enabled=False
             )
             def save(self, **kw):
@@ -356,7 +356,7 @@ class TestCallableHandler(TestCase):
             @index.when(method='POST')
             @pecan_wtforms.with_form(
                 SimpleForm,
-                error_config={'handler': lambda: request.path},
+                error_cfg={'handler': lambda: request.path},
                 csrf_enabled=False
             )
             def save(self, **kw):
@@ -430,7 +430,7 @@ class TestErrorAutoErrorMarkup(TestCase):
             @index.when(method='POST')
             @pecan_wtforms.with_form(
                 SimpleForm,
-                error_config={
+                error_cfg={
                     'handler': lambda: request.path,
                     'auto_insert_errors': True
                 },
@@ -497,7 +497,7 @@ class TestRESTControllerHandler(TestCase):
             @expose()
             @pecan_wtforms.with_form(
                 SimpleForm,
-                error_config={'handler': lambda: request.path},
+                error_cfg={'handler': lambda: request.path},
                 csrf_enabled=False
             )
             def post(self, **kw):

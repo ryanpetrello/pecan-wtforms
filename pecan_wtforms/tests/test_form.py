@@ -84,7 +84,7 @@ class TestFormWithErrorMarkup(TestCase):
             first_name='Ryan',
             last_name='Petrello',
             csrf_enabled=False,
-            error_config={
+            error_cfg={
                 'auto_insert_errors': True
             }
         )
@@ -113,7 +113,7 @@ class TestFormWithErrorMarkup(TestCase):
         f = SimpleForm(
             first_name='Ryan',
             csrf_enabled=False,
-            error_config={
+            error_cfg={
                 'auto_insert_errors': True
             }
         )
@@ -140,7 +140,7 @@ class TestFormWithErrorMarkup(TestCase):
 
         f = SimpleForm(
             csrf_enabled=False,
-            error_config={
+            error_cfg={
                 'auto_insert_errors': True
             }
         )

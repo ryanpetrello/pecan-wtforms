@@ -10,14 +10,14 @@ class Form(SessionSecureForm):
     """
 
     def __init__(self, formdata=None, obj=None, prefix='', csrf_enabled=True,
-                    error_config={}, **kwargs):
+                    error_cfg={}, **kwargs):
         """
         In addition to ``wtforms.ext.csrf.session.SessionSecureForm``:
 
         :param csrf_enabled:
             Whether to use CSRF protection. If False, all CSRF behavior is
             suppressed.
-        :param error_config:
+        :param error_cfg:
             A dictionary containing configuration for displaying validation
             errors.  See ``pecan_wtforms.with_form``.
         """
@@ -32,8 +32,8 @@ class Form(SessionSecureForm):
         super(Form, self).__init__(formdata, obj, prefix,
                                     csrf_context=csrf_context, **kwargs)
 
-        if error_config.pop('auto_insert_errors', False) is True:
-            self.setup_errors(error_config)
+        if error_cfg.pop('auto_insert_errors', False) is True:
+            self.setup_errors(error_cfg)
 
     def generate_csrf_token(self, csrf_context=None):
         if self.csrf_enabled is False:
