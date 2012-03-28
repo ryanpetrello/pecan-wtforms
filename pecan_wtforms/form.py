@@ -3,8 +3,10 @@ import urlparse
 import warnings
 from hashlib import md5
 
-from . import ValidationError
+from pecan import abort
 from wtforms.ext.csrf.form import SecureForm as WTFSecureForm
+from wtforms.ext.csrf.fields import CSRFTokenField as WTFCSRFTokenField
+from . import ValidationError
 from .errors import ErrorMarkupWidget
 
 __all__ = ['SecureForm', 'Form']
@@ -36,10 +38,27 @@ def constant_time_compare(val1, val2):
     return result == 0
 
 
+class CSRFTokenField(WTFCSRFTokenField):
+    """
+    Behaves similarly to CSRFTokenField field, but throws an HTTP 403 exception
+    on validation failure.
+    """
+
+    def validate(self, form, extra_validators=tuple()):
+        valid = super(CSRFTokenField, self).validate(
+            form,
+            extra_validators=extra_validators
+        )
+        if valid is False:
+            abort(403)
+        return valid
+
+
 class Form(WTFSecureForm):
     """
     Pecan-specific subclass of WTForms **Form** class.
     """
+    csrf_token = CSRFTokenField()
 
     SECRET_KEY = '_pecan_wtform_auth_token'
 
@@ -125,6 +144,9 @@ class SecureForm(Form):
         )
 
     def validate_csrf_token(self, field):
+        """
+        Verify that the current authentication token matches the field data.
+        """
         request = self.csrf_context['request']
         if request.method not in ('GET', 'HEAD', 'OPTIONS', 'TRACE'):
             referer = request.headers.get('Referer')

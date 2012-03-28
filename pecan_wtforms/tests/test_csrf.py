@@ -39,11 +39,15 @@ class TestCSRFValidation(TestCase):
             template_path=template_path
         ))
 
+    def test_simple_get(self):
+        response = self.app.get('/?first_name=Ryan&last_name=Petrello')
+        assert response.request.pecan['form'].errors == {}
+
     def test_referer_missing(self):
         response = self.app.post('/', params={
             'first_name': 'Ryan',
             'last_name': 'Petrello'
-        })
+        }, expect_errors=True)
 
         assert response.request.pecan['form'].errors == {
             'csrf_token': ['Referer checking failed - no Referer.']
@@ -53,11 +57,11 @@ class TestCSRFValidation(TestCase):
         response = self.app.post('/', params={
             'first_name': 'Ryan',
             'last_name': 'Petrello'
-        }, headers={'Referer': 'http://some-malicious-site'})
+        }, headers={'Referer': 'http://some-bad-site'}, expect_errors=True)
 
         assert response.request.pecan['form'].errors == {
             'csrf_token': [('Referer checking failed - '
-                            'http://some-malicious-site does not match '
+                            'http://some-bad-site does not match '
                             'http://localhost:80/.')]
         }
 
@@ -65,7 +69,7 @@ class TestCSRFValidation(TestCase):
         response = self.app.post('/', params={
             'first_name': 'Ryan',
             'last_name': 'Petrello'
-        }, headers={'Referer': 'http://localhost:80'})
+        }, headers={'Referer': 'http://localhost:80'}, expect_errors=True)
 
         assert response.request.pecan['form'].errors == {
             'csrf_token': ['CSRF token missing.']
@@ -79,7 +83,7 @@ class TestCSRFValidation(TestCase):
                 'first_name': 'Ryan',
                 'last_name': 'Petrello',
                 'csrf_token': 'ABC123'
-            }, headers={'Referer': 'http://localhost:80'})
+            }, headers={'Referer': 'http://localhost:80'}, expect_errors=True)
 
         assert response.request.pecan['form'].errors == {
             'csrf_token': ['CSRF token incorrect.']
