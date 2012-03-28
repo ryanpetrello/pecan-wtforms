@@ -19,7 +19,7 @@ class Form(SessionSecureForm):
             suppressed.
         :param error_config:
             A dictionary containing configuration for displaying validation
-            errors.  See ``pecan_wtf.with_form``.
+            errors.  See ``pecan_wtforms.with_form``.
         """
         self.csrf_enabled = csrf_enabled
 

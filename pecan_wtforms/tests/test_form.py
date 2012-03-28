@@ -4,16 +4,16 @@ from unittest import TestCase
 class TestFormValidation(TestCase):
 
     def test_simple_validation(self):
-        import pecan_wtf
+        import pecan_wtforms
 
-        class SimpleForm(pecan_wtf.form.Form):
-            first_name = pecan_wtf.fields.TextField(
+        class SimpleForm(pecan_wtforms.form.Form):
+            first_name = pecan_wtforms.fields.TextField(
                 "First Name",
-                [pecan_wtf.validators.Required()]
+                [pecan_wtforms.validators.Required()]
             )
-            last_name = pecan_wtf.fields.TextField(
+            last_name = pecan_wtforms.fields.TextField(
                 "Last Name",
-                [pecan_wtf.validators.Required()]
+                [pecan_wtforms.validators.Required()]
             )
 
         f = SimpleForm(
@@ -25,16 +25,16 @@ class TestFormValidation(TestCase):
         assert f.errors == {}
 
     def test_simple_validation_with_errors(self):
-        import pecan_wtf
+        import pecan_wtforms
 
-        class SimpleForm(pecan_wtf.form.Form):
-            first_name = pecan_wtf.fields.TextField(
+        class SimpleForm(pecan_wtforms.form.Form):
+            first_name = pecan_wtforms.fields.TextField(
                 "First Name",
-                [pecan_wtf.validators.Required()]
+                [pecan_wtforms.validators.Required()]
             )
-            last_name = pecan_wtf.fields.TextField(
+            last_name = pecan_wtforms.fields.TextField(
                 "Last Name",
-                [pecan_wtf.validators.Required()]
+                [pecan_wtforms.validators.Required()]
             )
 
         f = SimpleForm(
@@ -45,16 +45,16 @@ class TestFormValidation(TestCase):
         assert f.errors == {'last_name': ['This field is required.']}
 
     def test_csrf_validation_by_default(self):
-        import pecan_wtf
+        import pecan_wtforms
 
-        class SimpleForm(pecan_wtf.form.Form):
-            first_name = pecan_wtf.fields.TextField(
+        class SimpleForm(pecan_wtforms.form.Form):
+            first_name = pecan_wtforms.fields.TextField(
                 "First Name",
-                [pecan_wtf.validators.Required()]
+                [pecan_wtforms.validators.Required()]
             )
-            last_name = pecan_wtf.fields.TextField(
+            last_name = pecan_wtforms.fields.TextField(
                 "Last Name",
-                [pecan_wtf.validators.Required()]
+                [pecan_wtforms.validators.Required()]
             )
 
         f = SimpleForm(
@@ -68,16 +68,16 @@ class TestFormValidation(TestCase):
 class TestFormWithErrorMarkup(TestCase):
 
     def test_no_errors(self):
-        import pecan_wtf
+        import pecan_wtforms
 
-        class SimpleForm(pecan_wtf.form.Form):
-            first_name = pecan_wtf.fields.TextField(
+        class SimpleForm(pecan_wtforms.form.Form):
+            first_name = pecan_wtforms.fields.TextField(
                 "First Name",
-                [pecan_wtf.validators.Required()]
+                [pecan_wtforms.validators.Required()]
             )
-            last_name = pecan_wtf.fields.TextField(
+            last_name = pecan_wtforms.fields.TextField(
                 "Last Name",
-                [pecan_wtf.validators.Required()]
+                [pecan_wtforms.validators.Required()]
             )
 
         f = SimpleForm(
@@ -98,16 +98,16 @@ class TestFormWithErrorMarkup(TestCase):
                                      'value="Petrello">')
 
     def test_simple_error(self):
-        import pecan_wtf
+        import pecan_wtforms
 
-        class SimpleForm(pecan_wtf.form.Form):
-            first_name = pecan_wtf.fields.TextField(
+        class SimpleForm(pecan_wtforms.form.Form):
+            first_name = pecan_wtforms.fields.TextField(
                 "First Name",
-                [pecan_wtf.validators.Required()]
+                [pecan_wtforms.validators.Required()]
             )
-            last_name = pecan_wtf.fields.TextField(
+            last_name = pecan_wtforms.fields.TextField(
                 "Last Name",
-                [pecan_wtf.validators.Required()]
+                [pecan_wtforms.validators.Required()]
             )
 
         f = SimpleForm(
@@ -126,16 +126,16 @@ class TestFormWithErrorMarkup(TestCase):
                 in str(f.last_name)
 
     def test_multiple_error_fields(self):
-        import pecan_wtf
+        import pecan_wtforms
 
-        class SimpleForm(pecan_wtf.form.Form):
-            first_name = pecan_wtf.fields.TextField(
+        class SimpleForm(pecan_wtforms.form.Form):
+            first_name = pecan_wtforms.fields.TextField(
                 "First Name",
-                [pecan_wtf.validators.Required()]
+                [pecan_wtforms.validators.Required()]
             )
-            last_name = pecan_wtf.fields.TextField(
+            last_name = pecan_wtforms.fields.TextField(
                 "Last Name",
-                [pecan_wtf.validators.Required()]
+                [pecan_wtforms.validators.Required()]
             )
 
         f = SimpleForm(

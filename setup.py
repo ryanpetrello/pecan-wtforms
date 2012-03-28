@@ -6,10 +6,10 @@ except ImportError:
     use_setuptools()
     from setuptools import setup, find_packages  # noqa
 
-from pecan_wtf import __version__
+from pecan_wtforms import __version__
 
 setup(
-    name='pecan-wtf',
+    name='pecan-wtforms',
     version=__version__,
     description="""
     """,
@@ -31,11 +31,11 @@ setup(
     license='MIT',
     install_requires=['pecan', 'wtforms'],
     tests_require=['WebTest >= 1.3.1'],  # py3 compat
-    test_suite='pecan_wtf.tests',
+    test_suite='pecan_wtforms.tests',
     zip_safe=False,
     packages=find_packages(exclude=['ez_setup']),
     entry_points="""
     [pecan.extension]
-    wtf = pecan_wtf
+    wtforms = pecan_wtforms
     """
 )

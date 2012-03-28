@@ -4,18 +4,18 @@ from unittest import TestCase
 class TestErrorWidget(TestCase):
 
     def make_form(self, values={}, config={}):
-        import pecan_wtf
+        import pecan_wtforms
 
-        class SmartField(pecan_wtf.fields.TextField):
-            widget = pecan_wtf.errors.ErrorMarkupWidget(
-                pecan_wtf.fields.TextField.widget,
+        class SmartField(pecan_wtforms.fields.TextField):
+            widget = pecan_wtforms.errors.ErrorMarkupWidget(
+                pecan_wtforms.fields.TextField.widget,
                 **config
             )
 
-        class SimpleForm(pecan_wtf.Form):
+        class SimpleForm(pecan_wtforms.Form):
             name = SmartField(
                 "Name",
-                [pecan_wtf.validators.Required()]
+                [pecan_wtforms.validators.Required()]
             )
 
         f = SimpleForm(csrf_enabled=False, **values)
@@ -52,7 +52,7 @@ class TestErrorWidget(TestCase):
         )
 
     def test_format_multiple_errors(self):
-        from pecan_wtf.errors import ErrorMarkupWidget
+        from pecan_wtforms.errors import ErrorMarkupWidget
         markup = ErrorMarkupWidget(None).format_errors(['Error 1', 'Error 2'])
         assert markup == ''.join([
             '<span class="error-message">Error 1</span><br />\n',
