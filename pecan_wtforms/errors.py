@@ -17,14 +17,18 @@ class ErrorMarkupWidget(object):
     widget's HTML output.
     """
 
-    def __init__(self, widget, prepend_errors=True,
-                    error_formatter=default_formatter):
+    def __init__(self, widget, prepend_errors=True, class_='error',
+                    formatter=default_formatter):
         self.widget = widget
         self.prepend_errors = prepend_errors
-        self.error_formatter = error_formatter
+        self.class_ = class_
+        self.formatter = formatter
 
-    def __call__(self, field, **kw):
-        value = self.widget(field, **kw)
+    def __call__(self, field, **kwargs):
+        if field.errors:
+            c = kwargs.pop('class', '') or kwargs.pop('class_', '')
+            kwargs['class'] = u'%s %s' % (self.class_, c) if c else self.class_
+        value = self.widget(field, **kwargs)
         if field.errors:
             error_markup = self.format_errors(field.errors)
             if self.prepend_errors:
@@ -35,5 +39,5 @@ class ErrorMarkupWidget(object):
 
     def format_errors(self, errors):
         return ''.join([
-            self.error_formatter(e) for e in errors
+            self.formatter(e) for e in errors
         ])

@@ -393,7 +393,7 @@ class TestCallableHandler(TestCase):
         }
 
 
-class TestErrorAutoErrorMarkup(TestCase):
+class TestAutoErrorMarkup(TestCase):
 
     def setUp(self):
         import pecan_wtforms
@@ -448,7 +448,8 @@ class TestErrorAutoErrorMarkup(TestCase):
             '<label for="last_name">Last Name</label>: ',
             '<span class="error-message">This field is required.</span>',
             '<br />\n',
-            '<input id="last_name" name="last_name" type="text" value="">'
+            ('<input class="error" id="last_name" name="last_name" type="text"'
+            ' value="">')
         ]) in response.body
 
         assert 'form' in response.request.pecan

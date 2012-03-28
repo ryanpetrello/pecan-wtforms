@@ -44,7 +44,7 @@ class TestErrorWidget(TestCase):
 
     def test_custom_formatter(self):
         f = self.make_form(config={
-            'error_formatter': lambda msg: 'OMG! %s' % msg
+            'formatter': lambda msg: 'OMG! %s' % msg
         })
         assert f.errors == {'name': ['This field is required.']}
         assert str(f.name).startswith(
@@ -58,3 +58,13 @@ class TestErrorWidget(TestCase):
             '<span class="error-message">Error 1</span><br />\n',
             '<span class="error-message">Error 2</span><br />\n'
         ])
+
+    def test_default_error_class(self):
+        f = self.make_form()
+        assert f.errors == {'name': ['This field is required.']}
+        assert '<input class="error"' in str(f.name)
+
+    def test_custom_error_class(self):
+        f = self.make_form(config={'class_': 'failure'})
+        assert f.errors == {'name': ['This field is required.']}
+        assert '<input class="failure"' in str(f.name)

@@ -30,19 +30,24 @@ def with_form(formcls, key='form', error_cfg={}, **kw):
                                        validation fails.  Can also be a
                                        callable that returns a URI path.
 
-                         ``auto_insert_errors`` - When True, markup for
+                         ``auto_insert_errors`` - when True, markup for
                                                   validation errors will
                                                   automatically be added
                                                   adjacent to erronuous fields.
 
-                         ``prepend_errors`` - When True, error markup will be
+                         ``prepend_errors`` - when True, error markup will be
                                               added before the input control.
                                               When False, error markup will be
                                               added after the input control.
+                                              Defaults to True.
 
-                         ``formatter`` - A callable used to wrap error messages
+                         ``formatter`` - a callable used to wrap error messages
                                          with HTML.  The default wraps messages
                                          in <span>'s separated by newlines.
+
+                          ``class_`` - the class added to input fields when
+                                       there is an error for that field.
+                                       Defaults to 'error`.
     """
     def deco(f):
 
