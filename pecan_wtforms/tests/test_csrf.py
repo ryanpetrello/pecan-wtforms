@@ -10,6 +10,18 @@ class TestCSRFValidation(TestCase):
         from pecan import Pecan, expose
         from webtest import TestApp
 
+        class StripPasteVar(object):
+            """
+            CSRF is disabled for WebTest fake requests (to make testing
+            easier), but we still want to use it, so let's cheat a little.
+            """
+            def __init__(self, app):
+                self.app = app
+
+            def __call__(self, environ, start_response):
+                environ.pop('paste.testing')
+                return self.app(environ, start_response)
+
         class SimpleForm(pecan_wtforms.form.SecureForm):
             first_name = pecan_wtforms.fields.TextField(
                 "First Name",
@@ -34,10 +46,10 @@ class TestCSRFValidation(TestCase):
                 'templates'
         )
 
-        self.app = TestApp(Pecan(
+        self.app = TestApp(StripPasteVar(Pecan(
             RootController(),
             template_path=template_path
-        ))
+        )))
 
     def test_simple_get(self):
         response = self.app.get('/?first_name=Ryan&last_name=Petrello')
