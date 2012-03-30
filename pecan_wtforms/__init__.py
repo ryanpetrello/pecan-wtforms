@@ -7,7 +7,7 @@ from wtforms.widgets import *
 from wtforms import ValidationError  # noqa
 
 from .form import SecureForm, Form
-from .decorator import with_form
+from .decorator import with_form, redirect_to_handler
 
 __all__ = ['SecureForm', 'Form', 'ValidationError', 'fields', 'validators',
-'widgets', 'with_form']
+'widgets', 'with_form', 'redirect_to_handler']

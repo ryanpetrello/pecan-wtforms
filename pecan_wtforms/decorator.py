@@ -1,7 +1,6 @@
-from pecan import request, response
-from pecan.middleware.recursive import ForwardRequestException
+from pecan import request, response, redirect
 
-__all__ = ['with_form']
+__all__ = ['with_form', 'redirect_to_handler']
 
 
 def with_form(formcls, key='form', error_cfg={}, **kw):
@@ -70,22 +69,42 @@ def with_form(formcls, key='form', error_cfg={}, **kw):
 
             if request.method not in ('GET', 'HEAD') and \
                 not form.validate() and error_handler is not None:
-                location = error_handler
-                if callable(location):
-                    location = location()
-                request.environ['REQUEST_METHOD'] = 'GET'
-                request.environ['pecan.validation_redirected'] = True
-                request.environ['pecan.validation_form'] = form
-                raise ForwardRequestException(location)
+                    redirect_to_handler(form, error_handler)
 
             # Remove the CSRF token (so it's not passed to the controller)
             kwargs.pop('csrf_token', None)
 
             ns = f(*args, **kwargs)
-            if type(ns) is dict and key not in ns:
+            if isinstance(ns, dict) and key not in ns:
                 ns[key] = form
             return ns
 
         return wrapped
 
     return deco
+
+
+def redirect_to_handler(form, location):
+    """
+    Cause a form with error to internally redirect to a URI path.
+
+    This is generally for internal use, but can be called from within a Pecan
+    controller to trigger a validation failure from *within* the controller
+    itself, e.g.::
+
+        @expose()
+        @with_form(SomeForm, error_cfg={
+            'auto_insert_errors': True, 'handler': '/some/handler'
+        })
+        def some_controller(self, **kw):
+            if some_bad_condition():
+                form = pecan.request.pecan['form']
+                form.some_field.errors.append('Validation failure!')
+                redirect_to_handler(form, '/some/handler')
+    """
+    if callable(location):
+        location = location()
+    request.environ['REQUEST_METHOD'] = 'GET'
+    request.environ['pecan.validation_redirected'] = True
+    request.environ['pecan.validation_form'] = form
+    redirect(location, internal=True)
