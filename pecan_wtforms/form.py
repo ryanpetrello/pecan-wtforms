@@ -151,7 +151,7 @@ class SecureForm(Form):
 
         # For simplicity, don't require CSRF for unit tests.
         if request.environ.get('paste.testing'):
-            return
+            return  # pragma: nocover
 
         if request.method not in ('GET', 'HEAD', 'OPTIONS', 'TRACE'):
 
