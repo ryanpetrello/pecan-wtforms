@@ -170,8 +170,8 @@ class TestWrapperValidation(TestCase):
 
     def test_with_errors(self):
         response = self.app.post('/', params={})
-        assert response.body == ' '
-        assert response.namespace == ' '
+        assert response.body == 'None None'
+        assert response.namespace == 'None None'
         assert 'form' in response.request.pecan
         assert isinstance(response.request.pecan['form'], self.formcls_)
         assert response.request.pecan['form'].errors == {
@@ -228,8 +228,8 @@ class TestWrapperValidationWithGETMethod(TestCase):
 
     def test_with_errors(self):
         response = self.app.get('/')
-        assert response.body == ' '
-        assert response.namespace == ' '
+        assert response.body == 'None None'
+        assert response.namespace == 'None None'
         assert 'form' in response.request.pecan
         assert isinstance(response.request.pecan['form'], self.formcls_)
         assert response.request.pecan['form'].errors == {

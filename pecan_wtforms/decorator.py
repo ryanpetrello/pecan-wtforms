@@ -68,17 +68,15 @@ def with_form(formcls, key='form', validate_safe=False, error_cfg={}, **kw):
             if key not in request.pecan:
                 request.pecan[key] = form
 
-            if (request.method not in ('GET', 'HEAD') or validate_safe) and \
-                not form.validate() and error_handler is not None:
+            if (request.method not in ('GET', 'HEAD') or validate_safe):
+                if not form.validate() and error_handler is not None:
                     redirect_to_handler(form, error_handler)
 
-            # Remove the CSRF token (so it's not passed to the controller)
-            kwargs.pop('csrf_token', None)
+                # Remove the CSRF token (so it's not passed to the controller)
+                kwargs.pop('csrf_token', None)
 
-            # Overwrite kwargs with "validated" versions
-            kwargs.update(
-                (k, v) for k, v in form.data.items() if v
-            )
+                # Overwrite kwargs with "validated" versions
+                kwargs.update(form.data)
 
             ns = f(*args, **kwargs)
             if isinstance(ns, dict) and key not in ns:
