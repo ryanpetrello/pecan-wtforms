@@ -3,7 +3,7 @@ from pecan import request, response, redirect
 __all__ = ['with_form', 'redirect_to_handler']
 
 
-def with_form(formcls, key='form', error_cfg={}, **kw):
+def with_form(formcls, key='form', validate_safe=False, error_cfg={}, **kw):
     """
     Used to decorate a Pecan controller with form creation for GET | HEAD and
     form validation for anything else (e.g., POST | PUT | DELETE ).
@@ -13,15 +13,16 @@ def with_form(formcls, key='form', error_cfg={}, **kw):
     the template namespace at ``form`` (unless the ``key`` is otherwise
     specified).
 
-    For an HTTP POST, PUT, or DELETE (non-idempotent) request, the form is
-    instantiated and validated.  Errors from validation (if any) are accessible
-    at ``request.pecan['form'].errors``.
+    For an HTTP POST, PUT, or DELETE (RFC2616 unsafe methods) request, the
+    form is instantiated and validated.  Errors from validation (if any) are
+    accessible at ``request.pecan['form'].errors``.
 
     Optionally, validation errors can be made to trigger an internal HTTP
     redirect by specifying a ``handler`` in the ``error_cfg`` argument.
 
     :param formcls: A subclass of ``wtforms.form.Form``
     :param key: The key used to inject the form in the template namespace
+    :param validate_safe: When True, validation is performed against GET data
     :param error_cfg: a dictionary containing configuration for
                          displaying validatior errors:
 
@@ -56,7 +57,7 @@ def with_form(formcls, key='form', error_cfg={}, **kw):
 
             form = request.environ.pop('pecan.validation_form', None) or \
                    formcls(
-                       request.POST,
+                       request.params,
                        csrf_context={
                            'request': request,
                            'response': response
@@ -67,7 +68,7 @@ def with_form(formcls, key='form', error_cfg={}, **kw):
             if key not in request.pecan:
                 request.pecan[key] = form
 
-            if request.method not in ('GET', 'HEAD') and \
+            if (request.method not in ('GET', 'HEAD') or validate_safe) and \
                 not form.validate() and error_handler is not None:
                     redirect_to_handler(form, error_handler)
 

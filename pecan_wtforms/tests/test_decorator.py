@@ -180,6 +180,64 @@ class TestWrapperValidation(TestCase):
         }
 
 
+class TestWrapperValidationWithGETMethod(TestCase):
+
+    def setUp(self):
+        import pecan_wtforms
+        from pecan import Pecan, expose
+        from webtest import TestApp
+
+        class SimpleForm(pecan_wtforms.form.Form):
+            first_name = pecan_wtforms.fields.TextField(
+                "First Name",
+                [pecan_wtforms.validators.Required()]
+            )
+            last_name = pecan_wtforms.fields.TextField(
+                "Last Name",
+                [pecan_wtforms.validators.Required()]
+            )
+        self.formcls_ = SimpleForm
+
+        class RootController(object):
+            @expose()
+            @pecan_wtforms.with_form(SimpleForm, validate_safe=True)
+            def index(self, **kw):
+                print kw
+                return '%s %s' % (
+                    kw.get('first_name', ''),
+                    kw.get('last_name', '')
+                )
+
+        template_path = os.path.join(
+                os.path.dirname(__file__),
+                'templates'
+        )
+
+        self.app = TestApp(Pecan(
+            RootController(),
+            template_path=template_path
+        ))
+
+    def test_no_errors(self):
+        response = self.app.get('/?first_name=Ryan&last_name=Petrello')
+        assert response.body == 'Ryan Petrello'
+        assert response.namespace == 'Ryan Petrello'
+        assert 'form' in response.request.pecan
+        assert isinstance(response.request.pecan['form'], self.formcls_)
+        assert response.request.pecan['form'].errors == {}
+
+    def test_with_errors(self):
+        response = self.app.get('/')
+        assert response.body == ' '
+        assert response.namespace == ' '
+        assert 'form' in response.request.pecan
+        assert isinstance(response.request.pecan['form'], self.formcls_)
+        assert response.request.pecan['form'].errors == {
+            'first_name': ['This field is required.'],
+            'last_name': ['This field is required.']
+        }
+
+
 class TestValidatorCoercion(TestCase):
 
     def setUp(self):
