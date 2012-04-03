@@ -180,6 +180,44 @@ class TestWrapperValidation(TestCase):
         }
 
 
+class TestValidatorCoercion(TestCase):
+
+    def setUp(self):
+        import pecan_wtforms
+        from pecan import Pecan, expose
+        from webtest import TestApp
+
+        class SimpleForm(pecan_wtforms.form.Form):
+            age = pecan_wtforms.fields.IntegerField("Age")
+
+        self.formcls_ = SimpleForm
+
+        class RootController(object):
+            @expose()
+            @pecan_wtforms.with_form(SimpleForm)
+            def index(self, **kw):
+                assert type(kw['age']) is int
+                return str(kw['age'])
+
+        template_path = os.path.join(
+                os.path.dirname(__file__),
+                'templates'
+        )
+
+        self.app = TestApp(Pecan(
+            RootController(),
+            template_path=template_path
+        ))
+
+    def test_int_conversion_by_validator(self):
+        response = self.app.post('/', params={
+            'age': '30'
+        })
+        assert response.body == '30'
+        assert response.namespace == '30'
+        assert response.request.pecan['form'].errors == {}
+
+
 class TestCustomHandler(TestCase):
 
     def setUp(self):

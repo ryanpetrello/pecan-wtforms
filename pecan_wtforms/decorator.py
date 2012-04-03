@@ -74,6 +74,11 @@ def with_form(formcls, key='form', error_cfg={}, **kw):
             # Remove the CSRF token (so it's not passed to the controller)
             kwargs.pop('csrf_token', None)
 
+            # Overwrite kwargs with "validated" versions
+            kwargs.update(
+                (k, v) for k, v in form.data.items() if k in kwargs
+            )
+
             ns = f(*args, **kwargs)
             if isinstance(ns, dict) and key not in ns:
                 ns[key] = form
