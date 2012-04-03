@@ -77,7 +77,7 @@ def with_form(formcls, key='form', validate_safe=False, error_cfg={}, **kw):
 
             # Overwrite kwargs with "validated" versions
             kwargs.update(
-                (k, v) for k, v in form.data.items() if k in kwargs
+                (k, v) for k, v in form.data.items() if v
             )
 
             ns = f(*args, **kwargs)
