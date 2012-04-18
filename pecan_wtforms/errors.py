@@ -6,9 +6,9 @@ __all__ = ['ErrorMarkupWidget']
 def default_formatter(v):
     """
     Formatter that escapes the error, wraps the error in a span with
-    class ``error-message``, and adds a ``<br>``
+    class ``error-message``
     """
-    return '<span class="error-message">%s</span><br />\n' % escape(v, True)
+    return '<span class="error-message">%s</span>\n' % escape(v, True)
 
 
 class ErrorMarkupWidget(object):

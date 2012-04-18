@@ -32,14 +32,14 @@ class TestErrorWidget(TestCase):
         f = self.make_form()
         assert f.errors == {'name': ['This field is required.']}
         assert str(f.name).startswith(
-            '<span class="error-message">This field is required.</span><br />'
+            '<span class="error-message">This field is required.</span>'
         )
 
     def test_error_append(self):
         f = self.make_form(config={'prepend_errors': False})
         assert f.errors == {'name': ['This field is required.']}
         assert str(f.name).strip().endswith(
-            '<span class="error-message">This field is required.</span><br />'
+            '<span class="error-message">This field is required.</span>'
         )
 
     def test_custom_formatter(self):
@@ -55,8 +55,8 @@ class TestErrorWidget(TestCase):
         from pecan_wtforms.errors import ErrorMarkupWidget
         markup = ErrorMarkupWidget(None).format_errors(['Error 1', 'Error 2'])
         assert markup == ''.join([
-            '<span class="error-message">Error 1</span><br />\n',
-            '<span class="error-message">Error 2</span><br />\n'
+            '<span class="error-message">Error 1</span>\n',
+            '<span class="error-message">Error 2</span>\n'
         ])
 
     def test_default_error_class(self):

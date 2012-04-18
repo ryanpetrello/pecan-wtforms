@@ -98,6 +98,12 @@ class Form(WTFSecureForm):
         for f in self._fields.itervalues():
             f.widget = ErrorMarkupWidget(f.widget, **config)
 
+    def process(self, formdata=None, obj=None, **kw):
+        if formdata is None:
+            if hasattr(self, '_validation_original_data'):
+                formdata = self._validation_original_data
+        super(Form, self).process(formdata, obj, **kw)
+
 
 class SecureForm(Form):
     """

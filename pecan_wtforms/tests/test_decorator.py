@@ -489,6 +489,88 @@ class TestCallableHandler(TestCase):
         }
 
 
+class TestErrorFillFromRequestArgs(TestCase):
+    """
+    If a form is submitted and handled by a callable `handler`,
+    the `populate()` method should enforce values sent in the original request
+    (generally, request.POST).
+    """
+
+    def setUp(self):
+        import pecan_wtforms
+        from pecan import Pecan, expose, request
+        from pecan.middleware.recursive import RecursiveMiddleware
+        from webtest import TestApp
+
+        class SimpleForm(pecan_wtforms.form.Form):
+            first_name = pecan_wtforms.fields.TextField(
+                "First Name",
+                [pecan_wtforms.validators.Required()]
+            )
+            last_name = pecan_wtforms.fields.TextField(
+                "Last Name",
+                [pecan_wtforms.validators.Required()]
+            )
+        self.formcls_ = SimpleForm
+
+        class RootController(object):
+
+            @expose(generic=True, template='name.html')
+            @pecan_wtforms.with_form(SimpleForm)
+            def index(self, **kw):
+                request.pecan['form'].process(first_name='Ryan')
+                return dict()
+
+            @index.when(method='POST')
+            @pecan_wtforms.with_form(
+                SimpleForm,
+                error_cfg={'handler': lambda: request.path}
+            )
+            def save(self, **kw):
+                return 'SAVED!'
+
+        template_path = os.path.join(
+                os.path.dirname(__file__),
+                'templates'
+        )
+
+        self.app = TestApp(RecursiveMiddleware(Pecan(
+            RootController(),
+            template_path=template_path
+        )))
+
+    def test_no_errors(self):
+        response = self.app.post('/', params={
+            'first_name': 'Ryan',
+            'last_name': 'Petrello'
+        })
+        assert response.body == 'SAVED!'
+        assert response.namespace == 'SAVED!'
+        assert 'form' in response.request.pecan
+        assert isinstance(response.request.pecan['form'], self.formcls_)
+        assert response.request.pecan['form'].errors == {}
+
+    def test_default_prefill(self):
+        response = self.app.get('/')
+
+        form = self.formcls_()
+        assert 'form' in response.request.pecan
+        assert str(form.first_name.label) in response.body
+        assert form.first_name(value='Ryan') in response.body
+
+    def test_error_fill(self):
+        response = self.app.post('/', params={
+            'first_name': '',
+            'last_name': 'Petrello'
+        })
+
+        form = self.formcls_()
+        assert 'form' in response.request.pecan
+        assert str(form.first_name.label) in response.body
+        assert form.first_name(value='Ryan') not in response.body
+        assert form.first_name(value='') in response.body
+
+
 class TestAutoErrorMarkup(TestCase):
 
     def setUp(self):
@@ -524,7 +606,7 @@ class TestAutoErrorMarkup(TestCase):
                 }
             )
             def save(self, **kw):
-                return 'SAVED!'
+                return 'SAVED!'  # pragma: nocover
 
         template_path = os.path.join(
                 os.path.dirname(__file__),
@@ -542,8 +624,7 @@ class TestAutoErrorMarkup(TestCase):
         })
         assert ''.join([
             '<label for="last_name">Last Name</label>: ',
-            '<span class="error-message">This field is required.</span>',
-            '<br />\n',
+            '<span class="error-message">This field is required.</span>\n',
             ('<input class="error" id="last_name" name="last_name" type="text"'
             ' value="">')
         ]) in response.body
@@ -588,7 +669,7 @@ class TestRESTControllerHandler(TestCase):
                 error_cfg={'handler': lambda: request.path}
             )
             def post(self, **kw):
-                return 'SAVED!'
+                return 'SAVED!'  # pragma: nocover
 
         template_path = os.path.join(
                 os.path.dirname(__file__),

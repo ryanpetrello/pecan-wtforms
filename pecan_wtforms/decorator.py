@@ -106,6 +106,7 @@ def redirect_to_handler(form, location):
                 form.some_field.errors.append('Validation failure!')
                 redirect_to_handler(form, '/some/handler')
     """
+    setattr(form, '_validation_original_data', request.params)
     if callable(location):
         location = location()
     request.environ['REQUEST_METHOD'] = 'GET'
