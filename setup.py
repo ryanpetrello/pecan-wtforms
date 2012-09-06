@@ -6,11 +6,9 @@ except ImportError:
     use_setuptools()
     from setuptools import setup, find_packages  # noqa
 
-from pecan_wtforms import __version__
-
 setup(
     name='pecan-wtforms',
-    version=__version__,
+    version='0.1.0a',
     description="""
     """,
     long_description=None,
