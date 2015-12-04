@@ -173,7 +173,7 @@ class SecureForm(Form):
             # If the hostname of the referer and the requested resource
             # don't match...
             #
-            origin = 'http://%s/' % request.host
+            origin = '%s://%s/' % (request.scheme, request.host)
             if not self.same_origin(referer, origin):
                 raise ValidationError(field.gettext(
                     REASON_BAD_REFERER % (referer, origin)
